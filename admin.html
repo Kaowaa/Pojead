@@ -6,7 +6,10 @@
 <title>ระบบจัดการกิจกรรม (Admin)</title>
 <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600;700&display=swap" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" type="text/css" href="https://npmcdn.com/flatpickr/dist/themes/material_blue.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://npmcdn.com/flatpickr/dist/l10n/th.js"></script>
 <style>
 /* ===================================
    CSS สำหรับเว็บทางการวิทยาลัย (Admin)
@@ -172,7 +175,7 @@ h3, h5 {
   .main-layout { flex-direction: column; }
   .sidebar { width: 100%; margin-bottom: 20px; }
 }
-@media (max-width:600px) {
+@media (max-width:600px) {  
   .container { width:100%; border-radius:0; box-shadow:none; }
 }
 </style>
@@ -182,7 +185,7 @@ h3, h5 {
 <nav class="navbar navbar-dark bg-college-primary fixed-top">
   <div class="container-fluid">
     <div class="Font">
-      <img src="ตรา.png" class="logo-school">
+      <img src="img/ตรา.png" class="logo-school" alt="College Logo">
       ระบบจัดการกิจกรรม (Admin)
     </div>
     <div class="d-flex align-items-center">
@@ -197,8 +200,9 @@ h3, h5 {
   <div class="sidebar">
     <div class="text-center"><h4><strong>เพิ่มข้อมูลต่างๆ</strong></h4></div>
     <button id="modeActivity" class="btn btn-primary">📅 เพิ่มกิจกรรม</button>
-    <button id="modeSubject" class="btn btn-secondary">📕 เพิ่มวิชาแลกแต้ม</button>
     <button id="modeStudent" class="btn btn-success">👨‍🎓 จัดการนักเรียน</button>
+    <button id="modeSubject" class="btn btn-secondary">📕 เพิ่มวิชาแลกแต้ม</button>
+
   </div>
 
   <div class="content" id="adminLogin">
@@ -215,10 +219,16 @@ h3, h5 {
   <div class="content" id="adminPanel" style="display:none;">
     <h5 class="fw-bold mb-3">เพิ่มกิจกรรมใหม่</h5>
     <input id="eventTitle" class="form-control mb-2" placeholder="ชื่อกิจกรรม">
-    <input id="eventDate" type="date" class="form-control mb-2">
+    <input id="eventDate" type="text" class="form-control mb-2" placeholder="วว/ดด/ปปปป">
     <div class="d-flex gap-2 mb-2">
-      <input id="eventStart" type="time" class="form-control">
-      <input id="eventEnd" type="time" class="form-control">
+    <div class="w-100">
+        <label class="small text-muted">เวลาเริ่ม</label>
+        <input id="eventStart" type="text" class="form-control" placeholder="--:--">
+      </div>
+      <div class="w-100">
+        <label class="small text-muted">เวลาสิ้นสุด</label>
+        <input id="eventEnd" type="text" class="form-control" placeholder="--:--">
+      </div>
     </div>
     <select id="eventMode" class="form-select mb-3">
       <option value="register">ลงทะเบียน</option>
@@ -246,13 +256,13 @@ h3, h5 {
     <h5 class="fw-bold mb-3">เพิ่มนักเรียนใหม่</h5>
     <input id="studentName" class="form-control mb-2" placeholder="ชื่อ-สกุล">
     <input id="studentID" class="form-control mb-2" placeholder="รหัสนักเรียน">
-    <input id="studentGrade" class="form-control mb-2" placeholder="ระดับชั้น"> <input id="studentDept" class="form-control mb-2" placeholder="แผนก/สาย"> <input id="studentDOB" class="form-control mb-2" placeholder="วันเกิด (dd/mm/yy)">
+    <input id="studentGrade" class="form-control mb-2" placeholder="ระดับชั้น"> <input id="studentDept" class="form-control mb-2" placeholder="แผนก"> <input id="studentDOB" class="form-control mb-2" placeholder="วันเกิด (วัน/เดือน/ปี)">
     <button class="btn btn-success w-100 mb-3" onclick="addStudent()">เพิ่มนักเรียน</button>
 
     <hr>
     <h5 class="fw-bold mb-3">นำเข้านักเรียนจาก CSV</h5>
     <div class="d-flex gap-2 mb-2"> <input type="file" id="studentCSV" accept=".csv" class="form-control">
-      <button class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#csvGuideModal">? รูปแบบ CSV</button>
+      <button class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#csvGuideModal"> รูปแบบ CSV</button>
     </div>
     <button class="btn btn-primary w-100 mb-3" onclick="importStudentsCSV()">Import CSV</button>
 
@@ -267,26 +277,28 @@ h3, h5 {
 </div>
 
 <div class="modal fade" id="detailModal" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content">
-
-      <div class="modal-header">
-        <h5 class="modal-title">รายละเอียดกิจกรรม</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+  <div class="modal-dialog modal-xl"> <div class="modal-content">
+      <div class="modal-header bg-college-primary text-white">
+        <h5 class="modal-title" id="detailTitle">รายละเอียดกิจกรรม</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
-
       <div class="modal-body">
-        <p><strong>ชื่อกิจกรรม:</strong> <span id="detailTitle"></span></p>
-        <p><strong>วันที่:</strong> <span id="detailDate"></span></p>
-        <p><strong>ผู้ลงทะเบียนแล้ว:</strong> <span id="detailCount"></span> คน</p>
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <p><strong>วันที่:</strong> <span id="detailDate"></span></p>
+                <p><strong>จำนวนผู้ลงทะเบียน:</strong> <span id="detailCount" class="badge bg-success">0</span> คน</p>
+            </div>
+            <div class="col-md-6 text-end">
+              <button id="downloadEventRegBtn" class="btn btn-outline-secondary btn-sm">💾 ดาวน์โหลด CSV</button>                
+            </div>
+        </div>
+        
         <hr>
-        <h6>รายชื่อผู้เข้าร่วม</h6>
-        <ul id="detailList"></ul>
-      </div>
-
-      <div class="modal-footer">
-        <button class="btn btn-success me-auto" id="downloadEventRegBtn">ดาวน์โหลด CSV</button> 
-        <button class="btn btn-secondary" data-bs-dismiss="modal">ปิด</button>
+        <h6>🖼️ แผงตรวจสอบรูปภาพและรายชื่อ:</h6>
+        <div id="imageGallery" class="row g-3">
+            </div>
+        
+        <ul id="detailList" class="list-group mt-4" style="display:none;"></ul>
       </div>
     </div>
   </div>
@@ -385,24 +397,40 @@ h3, h5 {
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
+  flatpickr("#eventStart", {
+    enableTime: true,
+    noCalendar: true,
+    dateFormat: "H:i",
+    time_24hr: true,
+    allowInput: true
+  });
 
+  // ตั้งค่าตัวเลือกเวลาสิ้นสุด
+  flatpickr("#eventEnd", {
+    enableTime: true,
+    noCalendar: true,
+    dateFormat: "H:i",
+    time_24hr: true,
+    allowInput: true
+  });
+flatpickr("#eventDate", {
+    dateFormat: "Y-m-d",        // รูปแบบที่ใช้บันทึกลงฐานข้อมูล (เพื่อให้โค้ดเดิมทำงานได้)
+    altInput: true,             // เปิดใช้งานการแสดงผลรูปแบบอื่น
+    altFormat: "d/m/Y",         // รูปแบบที่จะแสดงในช่อง (วัน/เดือน/ปี)
+    locale: "th",               // ใช้ปฏิทินภาษาไทย
+    allowInput: true            // ยอมให้พิมพ์เองได้ด้วย
+  });
 /* 🆕 Utility Function: ดาวน์โหลด CSV */
-function downloadCSV(csv, filename) {
-    // เพิ่ม BOM (Byte Order Mark) สำหรับภาษาไทยใน Excel
-    const BOM = "\uFEFF"; 
-    const blob = new Blob([BOM + csv], { type: 'text/csv;charset=utf-8;' });
+function downloadCSV(csvContent, fileName) {
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
-    if (link.download !== undefined) { // Check for browser support
-        const url = URL.createObjectURL(blob);
-        link.setAttribute("href", url);
-        link.setAttribute("download", filename);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-    }
+    link.setAttribute("href", url);
+    link.setAttribute("download", fileName);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
 }
-
 /* =======================
    สลับ Tab
 ======================= */
@@ -538,7 +566,7 @@ function loadEvents(){
   const events = getEvents();
   list.innerHTML="";
 
-  const dates = Object.keys(events).sort(); // เรียงตามวันที่
+  const dates = Object.keys(events).sort();
   if(dates.length === 0){
     list.innerHTML="<li class='list-group-item text-center text-muted'>ยังไม่มีกิจกรรม</li>";
     return;
@@ -547,14 +575,23 @@ function loadEvents(){
   dates.forEach(date => {
     const dateTitle = document.createElement("li");
     dateTitle.className = "list-group-item bg-light fw-bold mt-2";
-    // ใช้ toLocaleDateString เพื่อแสดงวันที่ในรูปแบบไทย
-    dateTitle.textContent = "📅 วันที่ " + new Date(date).toLocaleDateString('th-TH', { year: 'numeric', month: 'long', day: 'numeric' });
+    
+    // แก้ไขจุดนี้: เปลี่ยนจากรูปแบบเต็ม เป็นรูปแบบ dd/mm/yyyy (ปี พ.ศ.)
+    const dateObj = new Date(date);
+    const thaiDate = dateObj.toLocaleDateString('th-TH', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+    
+    dateTitle.textContent = "📅 วันที่ " + thaiDate;
     list.appendChild(dateTitle);
 
-    events[date].sort((a,b) => a.start.localeCompare(b.start)).forEach((event, i) => { // เรียงตามเวลาเริ่ม
+    // ... ส่วนที่เหลือคงเดิม ...
+    events[date].sort((a,b) => a.start.localeCompare(b.start)).forEach((event, i) => {
+      // (โค้ดสร้างรายการกิจกรรมเหมือนเดิม)
       const li = document.createElement("li");
       li.className="list-group-item";
-      
       li.innerHTML = `
         <div>
           <strong class="text-primary">${event.title}</strong>
@@ -595,60 +632,192 @@ function deleteEvent(date, index){
   }
 }
 
-/* ⭐ แสดงรายชื่อผู้เข้าร่วม (พร้อมเพิ่มปุ่มดาวน์โหลด CSV) */
-function showEventDetail(date,index){
+function showEventDetail(date, index) {
   const events = getEvents();
   const regs = getRegistrations();
-
   const event = events[date][index];
   const list = regs[date] || [];
 
-  const filtered = list.filter(r => r.endsWith(`_${index}`));
+  const filtered = list.filter(r => {
+    if (r && typeof r === 'object') return r.idx == index;
+    return typeof r === 'string' && r.endsWith(`_${index}`);
+  });
 
   document.getElementById("detailTitle").innerText = event.title;
-  document.getElementById("detailDate").innerText  = date;
+  document.getElementById("detailDate").innerText = date;
   document.getElementById("detailCount").innerText = filtered.length;
 
   const students = JSON.parse(localStorage.getItem("students") || "[]");
+  const gallery = document.getElementById("imageGallery");
+  gallery.innerHTML = ""; 
 
-  const ul = document.getElementById("detailList");
-  ul.innerHTML="";
+  if (filtered.length === 0) {
+    gallery.innerHTML = `<div class="col-12 text-center text-muted p-5">ยังไม่มีผู้ลงทะเบียนกิจกรรมนี้</div>`;
+  }
 
-  filtered.forEach(r=>{
-    const id = r.split("_")[0];
+  filtered.forEach((r, i) => {
+    const isObj = (typeof r === 'object' && r !== null);
+    const id = isObj ? r.username : r.split("_")[0];
+    const timestamp = isObj ? new Date(r.timestamp).toLocaleTimeString('th-TH') : '-';
+    const imageData = isObj ? r.image : null;
+
     const stu = students.find(s => s.id === id);
+    const name = stu ? stu.name : "ไม่พบชื่อ";
 
-    const li = document.createElement("li");
-    // อัปเดตการแสดงผลให้แสดงข้อมูลนักเรียนใหม่ (Grade, Dept) ด้วย
-    const grade = stu ? stu.grade || '-' : '-';
-    const dept = stu ? stu.dept || '-' : '-';
-    li.textContent = stu ? `${stu.name} (${stu.id}) | ชั้น: ${grade}, แผนก: ${dept}` : id;
-    ul.appendChild(li);
+    const col = document.createElement("div");
+    col.className = "col-6 col-md-4 col-lg-3"; 
+    col.innerHTML = `
+      <div class="card h-100 shadow-sm border-0 position-relative">
+        <button class="btn btn-danger btn-sm position-absolute" 
+                style="top: 5px; right: 5px; z-index: 10; border-radius: 50%; width: 28px; height: 28px; padding: 0; line-height: 1;"
+                onclick="deleteRegistration('${date}', ${index}, '${id}')">
+          &times;
+        </button>
+
+        <div style="height: 140px; background: #f8f9fa; display: flex; align-items: center; justify-content: center; overflow: hidden; border-radius: 8px 8px 0 0;">
+          ${imageData 
+            ? `<img src="${imageData}" class="card-img-top" style="object-fit: cover; height: 100%; width: 100%; cursor: pointer;" onclick="viewEvidence('${imageData}', '${id}')">` 
+            : `<div class="text-muted small">ไม่มีรูปภาพ</div>`
+          }
+        </div>
+        <div class="card-body p-2 text-center">
+          <p class="mb-0 fw-bold text-truncate" style="font-size: 0.85rem;">${name}</p>
+          <p class="mb-0 text-muted" style="font-size: 0.75rem;">ID: ${id}</p>
+          <p class="mb-0 text-primary" style="font-size: 0.7rem;">🕒 ${timestamp}</p>
+        </div>
+      </div>
+    `;
+    gallery.appendChild(col);
   });
 
-  new bootstrap.Modal(document.getElementById("detailModal")).show();
-
-  // 🆕 ดาวน์โหลด CSV สำหรับกิจกรรมแต่ละวัน
-  document.getElementById("downloadEventRegBtn").onclick = () => {
-      const eventName = event.title;
-      // NEW: เพิ่มคอลัมน์ ระดับชั้น และ แผนก
-      const header = "ชื่อนักเรียน,รหัสนักเรียน,ระดับชั้น,แผนก\n";
+  // ✅ แก้ไขส่วนปุ่มดาวน์โหลด CSV ให้ทำงานได้
+  const downloadBtn = document.getElementById("downloadEventRegBtn");
+  if (downloadBtn) {
+    downloadBtn.onclick = () => {
+      const header = "\uFEFFชื่อนักเรียน,รหัสนักเรียน,ระดับชั้น,แผนก,เวลาลงทะเบียน\n";
       let csvContent = header;
-
       filtered.forEach(r => {
-          const id = r.split("_")[0];
-          const stu = students.find(s => s.id === id);
-          const name = stu ? stu.name : id;
-          const grade = stu ? stu.grade || '-' : '-';
-          const dept = stu ? stu.dept || '-' : '-';
-          
-          csvContent += `"${name}",${id},"${grade}","${dept}"\n`;
+        const isObj = (typeof r === 'object');
+        const id = isObj ? r.username : r.split("_")[0];
+        const time = isObj ? new Date(r.timestamp).toLocaleString('th-TH') : '-';
+        const stu = students.find(s => s.id === id);
+        const n = stu ? stu.name : id;
+        const g = stu ? stu.grade || '-' : '-';
+        const d = stu ? stu.dept || '-' : '-';
+        csvContent += `"${n}","${id}","${g}","${d}","${time}"\n`;
       });
-      
-      downloadCSV(csvContent, `ทะเบียน_${eventName}_${date}.csv`);
-  };
-}
+      downloadCSV(csvContent, `ทะเบียน_${event.title}_${date}.csv`);
+    };
+  }
 
+  new bootstrap.Modal(document.getElementById("detailModal")).show();
+}
+/**
+ * 🔥 ฟังก์ชันลบการลงทะเบียน (กันโกง)
+ * - ลบกิจกรรม
+ * - คำนวณแต้มใหม่
+ * - ยกเลิกวิชาที่แต้มไม่พออัตโนมัติ
+ */
+function deleteRegistration(date, eventIdx, studentId) {
+  if (!confirm(
+`⚠️ ยืนยันลบการลงทะเบียนของนักเรียน ${studentId}
+
+ผลที่จะเกิดขึ้น:
+1) แต้มจากกิจกรรมนี้จะถูกหัก
+2) ระบบจะตรวจสอบวิชาที่เคยแลก
+3) วิชาที่แต้มไม่พอจะถูกยกเลิกอัตโนมัติ`
+  )) return;
+
+  /* -------------------------
+     1. ลบการลงทะเบียน
+  --------------------------*/
+  const regs = getRegistrations();
+
+  Object.keys(regs).forEach(d => {
+    regs[d] = regs[d].filter(r => {
+      if (typeof r === "object" && r !== null) {
+        return !(r.username === studentId && r.idx == eventIdx);
+      }
+      return r !== `${studentId}_${eventIdx}`;
+    });
+  });
+
+  saveRegistrations(regs);
+
+  /* -------------------------
+     2. คำนวณแต้มใหม่จากกิจกรรมที่ยังเหลือ
+     (1 กิจกรรม = 0.5 แต้ม)
+  --------------------------*/
+  let joinCount = 0;
+  Object.values(regs).forEach(list => {
+    list.forEach(r => {
+      const rid = typeof r === "object" ? r.username : r.split("_")[0];
+      if (rid === studentId) joinCount++;
+    });
+  });
+
+  let remainingPoints = joinCount * 0.5;
+
+  /* -------------------------
+     3. ตรวจสอบการแลกวิชา
+  --------------------------*/
+  const redeemLogs = JSON.parse(localStorage.getItem("redeemLogs") || "[]");
+  const history = JSON.parse(localStorage.getItem("history_" + studentId) || "[]");
+
+  const studentRedeems = redeemLogs.filter(r => r.studentID === studentId);
+  const otherRedeems = redeemLogs.filter(r => r.studentID !== studentId);
+
+  let validRedeems = [];
+  let validHistory = [];
+
+  studentRedeems.forEach(log => {
+    if (remainingPoints >= log.cost) {
+      remainingPoints -= log.cost;
+      validRedeems.push(log);
+
+      const h = history.find(
+        x => x.code === log.subjectCode && x.date === log.date
+      );
+      if (h) validHistory.push(h);
+    } else {
+      console.warn(
+        `ยกเลิกวิชา ${log.subjectName} ของ ${studentId} (แต้มไม่พอ)`
+      );
+    }
+  });
+
+  /* -------------------------
+     4. บันทึกข้อมูลกลับ
+  --------------------------*/
+  localStorage.setItem(
+    "redeemLogs",
+    JSON.stringify([...otherRedeems, ...validRedeems])
+  );
+  localStorage.setItem(
+    "history_" + studentId,
+    JSON.stringify(validHistory)
+  );
+  localStorage.setItem(
+    "points_" + studentId,
+    remainingPoints.toFixed(1)
+  );
+
+  /* -------------------------
+     5. แจ้งผล + รีเฟรชหน้า
+  --------------------------*/
+  alert(
+`ลบสำเร็จ ✅
+แต้มคงเหลือ: ${remainingPoints.toFixed(1)}
+วิชาที่แต้มไม่พอถูกยกเลิกแล้ว`
+  );
+
+  const modal = bootstrap.Modal.getInstance(
+    document.getElementById("detailModal")
+  );
+  if (modal) modal.hide();
+
+  renderAllEvents();
+}
 
 /* =======================
    วิชาแลกแต้ม
@@ -929,25 +1098,25 @@ function showStudentDetail(studentId){
     const registrations = getRegistrations();
 
     const student = students.find(s => s.id === studentId);
-
     if(!student) return;
 
     // 1. คำนวณกิจกรรมและการขาด
     let attendedCount = 0;
     let missedCount = 0;
     
-    // วนลูปผ่านทุกวันที่มีกิจกรรม
     Object.keys(events).forEach(date => {
-        // วนลูปผ่านกิจกรรมในแต่ละวัน
         events[date].forEach((event, index) => {
-            // นับเฉพาะกิจกรรมแบบลงทะเบียน (register)
             if (event.mode === 'register') {
-                const regKey = `${studentId}_${index}`; // รูปแบบการลงทะเบียน
+                // ✅ แก้ไข: ปรับการเช็คให้รองรับทั้ง Object และ String
+                const dayRegs = registrations[date] || [];
+                const isRegistered = dayRegs.some(r => {
+                    if (r && typeof r === 'object') {
+                        return r.username === studentId && r.idx == index;
+                    }
+                    return r === `${studentId}_${index}`;
+                });
                 
-                // ตรวจสอบว่านักเรียนคนนี้ลงทะเบียนกิจกรรมนี้หรือไม่
-                const registered = (registrations[date] || []).includes(regKey);
-                
-                if (registered) {
+                if (isRegistered) {
                     attendedCount++;
                 } else {
                     missedCount++;
@@ -956,47 +1125,51 @@ function showStudentDetail(studentId){
         });
     });
 
-    // 2. คำนวณแต้มสะสม
-    const studentPoints = parseFloat(localStorage.getItem(`points_${studentId}`) || "0").toFixed(1);
-
-    // 3. รายการวิชาที่แลก
+    // 2. คำนวณแต้มสะสม (คำนวณใหม่เพื่อให้ตรงความจริงที่สุด)
+    const totalEarned = attendedCount * 0.5;
+    let redeemedPoints = 0;
     const studentRedeems = redeemLogs.filter(log => log.studentID === studentId);
-    const subjects = getSubjects();
+    studentRedeems.forEach(log => {
+        redeemedPoints += parseFloat(log.cost || 0);
+    });
+    
+    const finalPoints = (totalEarned - redeemedPoints) < 0 ? 0 : (totalEarned - redeemedPoints);
 
+    // 3. แสดงรายการวิชาที่แลก
     const redeemListUl = document.getElementById("stuRedeemList");
     redeemListUl.innerHTML = "";
 
     if (studentRedeems.length === 0) {
         redeemListUl.innerHTML = "<li class='list-group-item text-center text-muted'>ยังไม่มีการแลกวิชา</li>";
     } else {
-        // จัดกลุ่มวิชาที่แลกและนับจำนวนครั้ง
-        const redeemSummary = studentRedeems.reduce((acc, log) => {
-            const sub = subjects.find(s => s.code === log.subjectCode);
-            const subjectName = sub ? sub.name : `(ไม่พบวิชา: ${log.subjectCode})`;
-            
-            if (acc[subjectName]) {
-                acc[subjectName].count++;
-            } else {
-                acc[subjectName] = { count: 1, points: sub ? sub.points : 0 };
-            }
-            return acc;
-        }, {});
-
-        Object.keys(redeemSummary).forEach(name => {
-            const summary = redeemSummary[name];
+        // เรียงจากล่าสุดขึ้นก่อนเพื่อให้แอดมินดูง่าย
+        [...studentRedeems].reverse().forEach(log => {
             const li = document.createElement("li");
-            li.textContent = `${name} (แลกไป ${summary.count} ครั้ง) - ใช้แต้มรวม ${summary.count * summary.points} แต้ม`;
+            li.className = "list-group-item d-flex justify-content-between align-items-center";
+            li.innerHTML = `
+                <span>
+                    <strong>${log.subjectName}</strong> (${log.subjectCode})<br>
+                    <small class="text-muted">วันที่แลก: ${log.date}</small>
+                </span>
+                <span class="badge bg-danger rounded-pill">-${log.cost} แต้ม</span>
+            `;
             redeemListUl.appendChild(li);
         });
     }
 
-    // อัปเดต Modal (NEW: เพิ่ม grade และ dept)
-    document.getElementById("stuDetailName").innerText = `${student.name} (${student.id}) ชั้น: ${student.grade || '-'} แผนก: ${student.dept || '-'}`;
+    // อัปเดตข้อมูลลงใน Modal
+    document.getElementById("stuDetailName").innerText = `${student.name} (${student.id})`;
+    // แสดง Grade และ Dept แยกบรรทัดหรือส่วนเสริมเพื่อให้ดูสะอาดตา
+    const infoText = `ชั้น: ${student.grade || '-'} | แผนก: ${student.dept || '-'}`;
+    
+    // ตรวจสอบว่ามี Element สำหรับแสดงชั้น/แผนกไหม ถ้าไม่มีให้ต่อท้ายชื่อ
+    const nameEl = document.getElementById("stuDetailName");
+    nameEl.innerHTML = `<strong>${student.name}</strong> (${student.id})<br><small class="text-muted">${infoText}</small>`;
+
     document.getElementById("stuAttendedCount").innerText = attendedCount;
     document.getElementById("stuMissedCount").innerText = missedCount;
-    document.getElementById("stuPointCount").innerText = studentPoints;
+    document.getElementById("stuPointCount").innerText = finalPoints.toFixed(1);
     document.getElementById("stuRedeemTotal").innerText = studentRedeems.length;
-
 
     new bootstrap.Modal(document.getElementById("studentDetailModal")).show();
 }
@@ -1051,8 +1224,3 @@ renderStudents();
 
 </body>
 </html>
-
-
-
-
-
