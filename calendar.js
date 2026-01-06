@@ -66,7 +66,7 @@ function renderDays() {
   }
 }
 
-// ===================== แสดงข้อมูลกิจกรรมในวันนั้น =====================
+// ===================== แสดงข้อมูลกิจกรรมในวันนั้น (แบบเพิ่มการยืนยันด้วยรูป) =====================
 function selectDay(dateStr) {
   selectedDate = dateStr;
   const container = document.getElementById('eventInfo');
@@ -89,12 +89,16 @@ function selectDay(dateStr) {
     const eventStart = new Date(y, m - 1, d, startHour, startMin);
     const eventEnd = new Date(y, m - 1, d, endHour, endMin);
 
-    // ✅ ดึงข้อมูลลงทะเบียนเพื่อนับจำนวน
     const regs = getRegistrations();
-    const count = regs[dateStr]?.filter(k => k.endsWith(`_${index}`)).length || 0;
+    // ✅ แก้ไขการนับจำนวนคนให้รองรับ Object
+    const count = (regs[dateStr] || []).filter(k => {
+        if (typeof k === 'string') return k.endsWith(`_${index}`);
+        return k.idx === index;
+    }).length;
 
     let msg = "";
     let canRegister = false;
+    const isReg = username && isRegistered(dateStr, username, index);
 
     if (ev.mode === "register") {
       if (now < eventStart) msg = "<span style='color:red;font-weight:bold;'>⛔ ยังไม่ถึงเวลาลงทะเบียน</span>";
@@ -118,71 +122,70 @@ function selectDay(dateStr) {
       ${msg}
     `;
 
-    // ===================== ปุ่มลงทะเบียน =====================
     if (ev.mode === "register" && canRegister) {
+      if (!isReg) {
+          const fileLabel = document.createElement("label");
+          fileLabel.innerHTML = "<br><small style='display:block; margin-top:5px; color:#555;'>📸 แนบรูปถ่ายเพื่อยืนยันตัวตน:</small>";
+          
+          const fileInput = document.createElement("input");
+          fileInput.type = "file";
+          fileInput.accept = "image/*";
+          fileInput.id = `img_${index}`;
+          fileInput.className = "form-control form-control-sm mt-1";
+          fileInput.style.marginBottom = "8px";
+          
+          wrapper.appendChild(fileLabel);
+          wrapper.appendChild(fileInput);
+      }
+
       const btn = document.createElement("button");
-      btn.innerText = (username && isRegistered(dateStr, username, index)) ? "ลงทะเบียนกิจกรรมสำเร็จ ✅" : "ลงทะเบียนกิจกรรม";
-      btn.disabled = username && isRegistered(dateStr, username, index);
-      btn.style.backgroundColor = username && isRegistered(dateStr, username, index) ? "#28a745" : "#007bff";
+      btn.innerText = isReg ? "ลงทะเบียนกิจกรรมสำเร็จ ✅" : "ยืนยันลงทะเบียนด้วยรูปภาพ";
+      btn.disabled = isReg;
+      btn.style.backgroundColor = isReg ? "#28a745" : "#007bff";
       btn.style.color = "white";
       btn.style.border = "none";
       btn.style.padding = "6px 10px";
       btn.style.marginTop = "6px";
+      btn.style.width = "100%";
       btn.style.borderRadius = "6px";
       btn.style.cursor = btn.disabled ? "not-allowed" : "pointer";
 
       btn.onclick = () => {
         if (!username) {
-          // ✅ confirm + เด้งไป login
           if (confirm("กรุณาเข้าสู่ระบบก่อน")) {
-            console.log("กำลังเด้งไปหน้า login...");
             window.location.href = "login.html";
           }
           return;
         }
 
-        const ok = saveRegister(dateStr, username, index);
-        if (ok) {
-          btn.innerText = "ลงทะเบียนกิจกรรมสำเร็จ ✅";
-          btn.disabled = true;
-          btn.style.backgroundColor = "#28a745";
-          btn.style.cursor = "not-allowed";
-          if (typeof updateStats === "function") updateStats();
-          alert("ลงทะเบียนสำเร็จแล้ว ✅");
-          selectDay(dateStr); // refresh หน้ากิจกรรมใหม่ให้นับคนทันที
-        } else {
-          alert("คุณได้ลงทะเบียนไว้แล้ว");
+        const fileInput = document.getElementById(`img_${index}`);
+        if (!fileInput.files[0]) {
+          alert("❌ กรุณาเลือกรูปภาพก่อนลงทะเบียน");
+          return;
         }
-      };
 
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const imageData = e.target.result;
+          const ok = saveRegister(dateStr, username, index, imageData);
+          if (ok) {
+            if (typeof updateStats === "function") updateStats();
+            alert("ลงทะเบียนสำเร็จพร้อมแนบรูปภาพแล้ว ✅");
+            selectDay(dateStr); 
+          } else {
+            alert("คุณได้ลงทะเบียนไว้แล้ว");
+          }
+        };
+        reader.readAsDataURL(fileInput.files[0]);
+      };
       wrapper.appendChild(btn);
     }
-
     container.appendChild(wrapper);
   });
 }
 
-// ===================== ฟังก์ชันจัดการลงทะเบียน =====================
-function register(date, username, idx = 0) {
-  if (!date || !username) return false;
-  const regs = getRegistrations();
-  if (!regs[date]) regs[date] = [];
-  if (!Array.isArray(regs[date])) regs[date] = [];
-  const key = `${username}_${idx}`;
-  if (!regs[date].includes(key)) {
-    regs[date].push(key);
-    saveRegistrations(regs);
-    return true;
-  }
-  return false;
-}
-
-function isRegistered(date, username, idx = 0) {
-  const regs = getRegistrations();
-  if (!regs[date]) return false;
-  const key = `${username}_${idx}`;
-  return regs[date].includes(key);
-}
+// ✅ แก้ไข: ใช้ function isRegistered จาก storage.js (ตรวจสอบ Object ได้แม่นยำกว่า)
+// หมายเหตุ: ถ้าใน storage.js มีอยู่แล้ว ไม่ต้องเขียนซ้ำที่นี่ก็ได้ครับ
 
 // ===================== จัดการปี =====================
 function changeYear(delta) {
@@ -196,9 +199,8 @@ function changeYear(delta) {
 renderYear();
 renderMonths();
 renderDays();
-// ===================== ระบบนับกิจกรรมอัตโนมัติ =====================
 
-// ✅ ตรวจสอบและอัปเดตการขาดกิจกรรมทุกครั้งที่เปิดดู
+// ✅ ตรวจสอบและอัปเดตการขาดกิจกรรม
 function checkMissedEvents() {
   const username = localStorage.getItem('student');
   if (!username) return;
@@ -219,8 +221,13 @@ function checkMissedEvents() {
 
       const key = `${username}_${date}_${idx}`;
 
-      // หมดเวลาแล้ว และยังไม่เคยลงทะเบียน
-      const isLate = now > eventEnd && !(regs[date]?.includes(`${username}_${idx}`));
+      // ✅ แก้ไข: เช็คการลงทะเบียนให้รองรับทั้ง String และ Object
+      const isUserRegistered = regs[date]?.some(r => {
+          if (typeof r === 'string') return r === `${username}_${idx}`;
+          return r.username === username && r.idx === idx;
+      });
+
+      const isLate = now > eventEnd && !isUserRegistered;
       if (isLate && !missed[key]) {
         missed[key] = true;
       }
@@ -231,6 +238,4 @@ function checkMissedEvents() {
   if (typeof updateStats === "function") updateStats();
 }
 
-// เรียกใช้เมื่อโหลดหน้า index
 checkMissedEvents();
-
