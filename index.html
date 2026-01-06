@@ -233,7 +233,7 @@ h2 {
 <div class="container main-container">
 
 <img src="ตรา.png" class="logo-school1" alt="College Logo">
-<h2>ระบบกิจกรรมและลงทะเบียนเข้าร่วม</h2>
+<h2>ปฏิทินกิจกรรมและลงทะเบียนเข้าร่วม</h2>
 
 <div class="calendar-header">
   <button class="year-btn" onclick="changeYear(-1)">◀ ปีที่แล้ว</button>
@@ -248,6 +248,10 @@ h2 {
 
 <button id="registerBtn" style="display:none" onclick="registerEvent()">ลงทะเบียนกิจกรรม</button>
 
+</div>
+<div id="imageUploadSection" style="margin-top: 15px; display: none;">
+  <label class="form-label small fw-bold text-muted">📸 อัปโหลดรูปภาพยืนยันการเข้าร่วม:</label>
+  <input type="file" id="eventImage" class="form-control form-control-sm" accept="image/*">
 </div>
 
 <script src="calendar.js"></script>
@@ -289,18 +293,29 @@ function updateLoginUI() {
  */
 function updateStats(){
   const studentId = localStorage.getItem("student");
-  const regs = JSON.parse(localStorage.getItem("registrations") || "{}");
+  if (!studentId) return; // เพิ่มเช็คเพื่อความปลอดภัย
+
+  const regs = getRegistrations(); // ใช้ฟังก์ชันจาก storage.js
   const missed = JSON.parse(localStorage.getItem("missedEvents") || "{}");
   
-  // 🆕 ดึงข้อมูลที่เกี่ยวข้องกับการแลกแต้ม
   const redeemLogs = JSON.parse(localStorage.getItem("redeemLogs") || "[]");
   const subjects = JSON.parse(localStorage.getItem("subjects") || "[]");
 
   let joinCount = 0;
-  Object.keys(regs).forEach(date=>{
-    regs[date].forEach(r=>{
-      if(r.startsWith(studentId + "_")) joinCount++;
-    });
+
+  // ✅ แก้ไข: ปรับการนับจำนวนให้รองรับทั้ง Object และ String
+  Object.keys(regs).forEach(date => {
+    if (Array.isArray(regs[date])) {
+      regs[date].forEach(r => {
+        if (r && typeof r === 'object') {
+          // แบบใหม่ (Object)
+          if (r.username === studentId) joinCount++;
+        } else if (typeof r === 'string') {
+          // แบบเก่า (String)
+          if (r.startsWith(studentId + "_")) joinCount++;
+        }
+      });
+    }
   });
 
   // 1. คำนวณแต้มที่ได้รับทั้งหมด
@@ -317,13 +332,13 @@ function updateStats(){
 
   // 3. คำนวณแต้มคงเหลือ
   let finalPoints = totalEarnedPoints - redeemedPoints;
-  if (finalPoints < 0) finalPoints = 0; // ป้องกันไม่ให้แต้มติดลบ
+  if (finalPoints < 0) finalPoints = 0;
 
+  // ปรับการนับกิจกรรมที่ขาดให้รองรับรูปแบบใหม่ (ถ้ามี)
   let missCount = Object.keys(missed).filter(k => k.startsWith(studentId + "_")).length;
   
-  // 4. บันทึกและแสดงผลแต้มคงเหลือสุดท้าย
+  // 4. แสดงผล
   localStorage.setItem("points_" + studentId, finalPoints);
-
   document.getElementById("joinCount").innerText = joinCount;
   document.getElementById("missCount").innerText = missCount;
   document.getElementById("pointCount").innerText = finalPoints.toFixed(1);
@@ -341,5 +356,4 @@ updateLoginUI();
 </body>
 
 </html>
-
 
