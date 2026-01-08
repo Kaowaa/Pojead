@@ -221,7 +221,7 @@ h3, h5 {
     <input id="eventTitle" class="form-control mb-2" placeholder="ชื่อกิจกรรม">
     <input id="eventDate" type="text" class="form-control mb-2" placeholder="วว/ดด/ปปปป">
     <div class="d-flex gap-2 mb-2">
-    <div class="w-100">
+      <div class="w-100">
         <label class="small text-muted">เวลาเริ่ม</label>
         <input id="eventStart" type="text" class="form-control" placeholder="--:--">
       </div>
@@ -235,10 +235,22 @@ h3, h5 {
       <option value="notify">ประชาสัมพันธ์</option>
     </select>
     <button class="btn btn-success w-100 mb-3" onclick="addEvent()">เพิ่มกิจกรรม</button>
+
+    <hr>
+    <h5 class="fw-bold mb-3">นำเข้ากิจกรรมจาก CSV</h5>
+    <div class="d-flex gap-2 mb-2">
+        <input type="file" id="eventCSV" accept=".csv" class="form-control">
+<button class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#eventCSVModal">รูปแบบ</button>    </div>
+    <button class="btn btn-primary w-100 mb-3" onclick="importEventsCSV()">Import กิจกรรมจาก CSV</button>
+
+    <hr>
+    <h5 class="fw-bold mb-3">รายงานกิจกรรมทั้งหมด</h5>
+    <button class="btn btn-info w-100 mb-3 text-white" onclick="downloadAllEventsReport()">📥 ดาวน์โหลดตารางกิจกรรม (CSV)</button>
+
     <hr>
     <h5 class="fw-bold mb-2">📅 รายการกิจกรรมทั้งหมด</h5>
     <ul id="eventList" class="list-group"></ul>
-  </div>
+</div>
 
   <div class="content" id="subjectPanel" style="display:none;">
     <h5 class="fw-bold mb-3">เพิ่มวิชาใหม่</h5>
@@ -248,31 +260,46 @@ h3, h5 {
     <button class="btn btn-success w-100 mb-3" onclick="addSubject()">เพิ่มวิชา</button>
 
     <hr>
+    <h5 class="fw-bold mb-3">นำเข้าวิชาจาก CSV</h5>
+    <div class="d-flex gap-2 mb-2">
+        <input type="file" id="subjectCSV" accept=".csv" class="form-control">
+<button class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#subjectCSVModal">รูปแบบ</button>    </div>
+    <button class="btn btn-primary w-100 mb-3" onclick="importSubjectsCSV()">Import วิชาจาก CSV</button>
+
+    <hr>
+    <h5 class="fw-bold mb-3">รายงานวิชาทั้งหมด</h5>
+    <button class="btn btn-info w-100 mb-3 text-white" onclick="downloadAllSubjectReport()">📥 ดาวน์โหลดรายการวิชา (CSV)</button>
+
+    <hr>
     <h5 class="fw-bold mb-2">รายการวิชาทั้งหมด</h5>
     <ul id="subjectList" class="list-group"></ul>
-  </div>
+</div>
 
   <div class="content" id="studentPanel" style="display:none;">
     <h5 class="fw-bold mb-3">เพิ่มนักเรียนใหม่</h5>
-    <input id="studentName" class="form-control mb-2" placeholder="ชื่อ-สกุล">
-    <input id="studentID" class="form-control mb-2" placeholder="รหัสนักเรียน">
-    <input id="studentGrade" class="form-control mb-2" placeholder="ระดับชั้น"> <input id="studentDept" class="form-control mb-2" placeholder="แผนก"> <input id="studentDOB" class="form-control mb-2" placeholder="วันเกิด (วัน/เดือน/ปี)">
+    <input id="stdName" class="form-control mb-2" placeholder="ชื่อ-นามสกุล">
+    <input id="stdId" class="form-control mb-2" placeholder="รหัสนักเรียน">
+    <input id="stdGrade" class="form-control mb-2" placeholder="ระดับชั้น (เช่น ปวช.1)">
+    <input id="stdDept" class="form-control mb-2" placeholder="แผนก">
+    <input id="stdDob" class="form-control mb-2" placeholder="วันเดือนปีเกิด (วว/ดด/ปปปป)">
     <button class="btn btn-success w-100 mb-3" onclick="addStudent()">เพิ่มนักเรียน</button>
 
     <hr>
     <h5 class="fw-bold mb-3">นำเข้านักเรียนจาก CSV</h5>
-    <div class="d-flex gap-2 mb-2"> <input type="file" id="studentCSV" accept=".csv" class="form-control">
-      <button class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#csvGuideModal"> รูปแบบ CSV</button>
+    <div class="d-flex gap-2 mb-2">
+        <input type="file" id="studentCSV" accept=".csv" class="form-control">
+        <button class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#studentCSVModal">รูปแบบ</button>
     </div>
-    <button class="btn btn-primary w-100 mb-3" onclick="importStudentsCSV()">Import CSV</button>
+    <button class="btn btn-primary w-100 mb-3" onclick="importStudentsCSV()">Import นักเรียนจาก CSV</button>
 
     <hr>
-    <h5 class="fw-bold mb-3">รายงานนักเรียนทั้งหมด</h5>
-    <button class="btn btn-info w-100 mb-3 text-white" onclick="downloadAllStudentReport()">📥 ดาวน์โหลดรายงานรวม (CSV)</button>
+    <h5 class="fw-bold mb-3">รายงานนักเรียน</h5>
+    <button class="btn btn-info w-100 mb-3 text-white" onclick="downloadAllStudentsReport()">📥 ดาวน์โหลดรายชื่อนักเรียน (CSV)</button>
+
     <hr>
-    <h5 class="fw-bold mb-2">รายการนักเรียนทั้งหมด</h5>
+    <h5 class="fw-bold mb-2">รายชื่อนักเรียนทั้งหมด</h5>
     <ul id="studentList" class="list-group"></ul>
-  </div>
+</div>
 
 </div>
 
@@ -392,11 +419,138 @@ h3, h5 {
     </div>
   </div>
 </div>
+<div class="modal fade" id="eventCSVModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title">รูปแบบไฟล์ CSV สำหรับกิจกรรม</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>กรุณาเรียงข้อมูลในไฟล์ CSV ตามลำดับดังนี้:</p>
+        <div class="bg-light p-3 border rounded mb-3">
+            <code>วันที่(ปปปป-ดด-วว),ชื่อกิจกรรม,เริ่ม,จบ,ประเภท</code>
+        </div>
+        <h6>คำอธิบายฟิลด์:</h6>
+        <ul>
+            <li><strong>วันที่:</strong> ค.ศ. เท่านั้น เช่น <code>2025-02-15</code></li>
+            <li><strong>ประเภท:</strong> ใส่ได้ 2 อย่างคือ <code>register</code> (ลงทะเบียน) หรือ <code>notify</code> (ประชาสัมพันธ์)</li>
+        </ul>
+        <h6>ตัวอย่างข้อมูล:</h6>
+        <pre class="bg-dark text-warning p-2">2025-02-15,ปฐมนิเทศ,08:30,12:00,register
+2025-02-16,ประชุมครู,13:00,16:00,notify</pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="subjectCSVModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title">รูปแบบไฟล์ CSV สำหรับวิชาแลกแต้ม</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>กรุณาเรียงข้อมูลในไฟล์ CSV ตามลำดับดังนี้:</p>
+        <div class="bg-light p-3 border rounded mb-3">
+            <code>ชื่อวิชา,รหัสวิชา,แต้มที่ต้องใช้</code>
+        </div>
+        <h6>ตัวอย่างข้อมูล:</h6>
+        <pre class="bg-dark text-warning p-2">วิชาภาษาไทย,TH101,50
+วิชาคณิตศาสตร์,MA102,100
+ช่างยนต์พื้นฐาน,ME201,150</pre>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal fade" id="studentCSVModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-info text-white">
+        <h5 class="modal-title">รูปแบบไฟล์ CSV สำหรับนักเรียน</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <p>กรุณาเรียงข้อมูลในไฟล์ CSV ตามลำดับ 5 คอลัมน์ดังนี้:</p>
+        <div class="bg-light p-3 border rounded mb-3">
+            <code>ชื่อ-นามสกุล,รหัสนักเรียน,ระดับชั้น,สาขาวิชา,วันเดือนปีเกิด</code>
+        </div>
+        <h6>คำอธิบายฟิลด์:</h6>
+        <ul>
+            <li><strong>วันเดือนปีเกิด:</strong> รูปแบบ <code>วว/ดด/ปปปป</code> (เช่น 15052548)</li>
+        </ul>
+        <h6>ตัวอย่างข้อมูล:</h6>
+        <pre class="bg-dark text-warning p-2">นายสมชาย ดีมาก,652010001,ปวช.1,ช่างยนต์,15022549
+นางสาวใจดี เรียนเก่ง,652010002,ปวช.1,การบัญชี,20112548</pre>
+      </div>
+    </div>
+  </div>
+</div>
 <script src="storage.js"></script>
 <script src="calendar.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
+  /* =======================
+   วิชาแลกแต้ม (Subjects) 🆕 เพิ่มเติม
+======================= */
+
+// ฟังก์ชันนำเข้าวิชาจาก CSV
+function importSubjectsCSV() {
+    const file = document.getElementById("subjectCSV").files[0];
+    if (!file) {
+        alert("❌ กรุณาเลือกไฟล์ CSV ก่อนครับ");
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = e => {
+        const lines = e.target.result.split(/\r?\n/);
+        let subjects = JSON.parse(localStorage.getItem("subjects") || "[]");
+        let added = 0;
+
+        lines.forEach((line, i) => {
+            if (i === 0 || !line.trim()) return; // ข้ามหัวตารางหรือบรรทัดว่าง
+
+            const parts = line.split(",").map(x => x.trim().replace(/^"|"$/g, ''));
+            if (parts.length < 3) return;
+
+            const name = parts[0];
+            const code = parts[1];
+            const points = parseInt(parts[2]);
+
+            // ตรวจสอบว่ามีรหัสวิชานี้หรือยัง
+            if (name && code && !isNaN(points) && !subjects.some(s => s.code === code)) {
+                subjects.push({ name, code, points });
+                added++;
+            }
+        });
+
+        localStorage.setItem("subjects", JSON.stringify(subjects));
+        alert(`✅ นำเข้าสำเร็จ ${added} วิชา`);
+        renderSubjects(); // อัปเดตรายการในหน้าจอ
+        document.getElementById("subjectCSV").value = "";
+    };
+    reader.readAsText(file, 'UTF-8');
+}
+
+// ฟังก์ชันดาวน์โหลดรายงานวิชาทั้งหมดเป็น CSV
+function downloadAllSubjectReport() {
+    const subjects = JSON.parse(localStorage.getItem("subjects") || "[]");
+    if (subjects.length === 0) {
+        alert("ไม่มีข้อมูลวิชาที่จะส่งออก");
+        return;
+    }
+
+    // สร้างเนื้อหา CSV (ใส่ BOM เพื่อให้ Excel อ่านภาษาไทยออก)
+    let csv = "\uFEFFชื่อวิชา,รหัสวิชา,แต้มที่ใช้\n";
+    subjects.forEach(s => {
+        csv += `"${s.name}","${s.code}","${s.points}"\n`;
+    });
+
+    downloadCSV(csv, "รายการวิชาทั้งหมด.csv");
+}
   flatpickr("#eventStart", {
     enableTime: true,
     noCalendar: true,
@@ -521,11 +675,16 @@ function getRegistrations(){
     return JSON.parse(localStorage.getItem("registrations") || "{}");
 }
 
-function addEvent(){
+/* ==========================================
+   จัดการกิจกรรม (Events) - เพิ่ม, นำเข้า และ รายงาน
+   ========================================== */
+
+// 1. ฟังก์ชันเพิ่มกิจกรรมเดิมของคุณ (ที่มีการตรวจการชนเวลา)
+function addEvent() {
   const title = document.getElementById("eventTitle").value.trim();
-  const date  = document.getElementById("eventDate").value;
-  const start = document.getElementById("eventStart").value; // 24-hour format
-  const end   = document.getElementById("eventEnd").value;   // 24-hour format
+  const date  = document.getElementById("eventDate").value; // คาดหวังรูปแบบ YYYY-MM-DD
+  const start = document.getElementById("eventStart").value; 
+  const end   = document.getElementById("eventEnd").value;   
   const mode  = document.getElementById("eventMode").value;
 
   if(!title || !date || !start || !end){
@@ -542,7 +701,7 @@ function addEvent(){
   });
 
   if (isConflict) {
-    alert("มีกิจกรรมซ้อนในช่วงเวลาเดียวกันแล้ว!");
+    alert("❌ มีกิจกรรมซ้อนในช่วงเวลาเดียวกันแล้ว!");
     return;
   }
 
@@ -551,14 +710,90 @@ function addEvent(){
 
   alert("เพิ่มกิจกรรมสำเร็จ ✔");
 
-  // Clear form
+  // ล้างฟอร์ม
   document.getElementById("eventTitle").value="";
   document.getElementById("eventDate").value="";
   document.getElementById("eventStart").value="";
   document.getElementById("eventEnd").value="";
   document.getElementById("eventMode").value="register";
 
-  loadEvents();
+  if(typeof renderEvents === "function") renderEvents(); 
+  else if(typeof loadEvents === "function") loadEvents();
+}
+
+// 2. ฟังก์ชันนำเข้ากิจกรรมจาก CSV
+function importEventsCSV() {
+    const fileInput = document.getElementById("eventCSV");
+    const file = fileInput.files[0];
+    if (!file) {
+        alert("❌ กรุณาเลือกไฟล์ CSV ก่อนครับ");
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = e => {
+        const lines = e.target.result.split(/\r?\n/);
+        let events = getEvents();
+        let addedCount = 0;
+
+        lines.forEach((line, i) => {
+            if (i === 0 || !line.trim()) return; // ข้าม Header
+
+            // แยกข้อมูลด้วยคอมม่า
+            const parts = line.split(",").map(x => x.trim().replace(/^"|"$/g, ''));
+            if (parts.length < 5) return;
+
+            const date  = parts[0]; // รูปแบบ 2025-02-25
+            const title = parts[1];
+            const start = parts[2];
+            const end   = parts[3];
+            const mode  = parts[4]; // 'register' หรือ 'notify'
+
+            if (date && title && start && end) {
+                if (!events[date]) events[date] = [];
+                
+                // (ทางเลือก) ตรวจสอบการซ้ำซ้อนก่อนนำเข้า
+                const isDup = events[date].some(ev => ev.title === title && ev.start === start);
+                if(!isDup) {
+                    events[date].push({ title, start, end, mode });
+                    addedCount++;
+                }
+            }
+        });
+
+        saveEvents(events);
+        alert(`✅ นำเข้ากิจกรรมสำเร็จ ${addedCount} รายการ`);
+        if(typeof renderEvents === "function") renderEvents();
+        fileInput.value = ""; 
+    };
+    reader.readAsText(file, 'UTF-8');
+}
+
+// 3. ฟังก์ชันดาวน์โหลดรายงานกิจกรรมทั้งหมด (CSV)
+function downloadAllEventsReport() {
+    const events = getEvents();
+    if (Object.keys(events).length === 0) {
+        alert("ไม่มีข้อมูลกิจกรรมให้ดาวน์โหลด");
+        return;
+    }
+
+    // ใส่ \uFEFF เพื่อให้ Excel อ่านภาษาไทยออก
+    let csvContent = "\uFEFFวันที่,ชื่อกิจกรรม,เวลาเริ่ม,เวลาจบ,ประเภท\n";
+    
+    // จัดเรียงวันที่และวนลูปสร้างบรรทัดข้อมูล
+    Object.keys(events).sort().forEach(date => {
+        events[date].forEach(ev => {
+            const modeName = ev.mode === 'register' ? 'ลงทะเบียน' : 'ประชาสัมพันธ์';
+            csvContent += `"${date}","${ev.title}","${ev.start}","${ev.end}","${modeName}"\n`;
+        });
+    });
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "รายงานตารางกิจกรรม.csv";
+    link.click();
 }
 
 function loadEvents(){
@@ -1224,4 +1459,3 @@ renderStudents();
 
 </body>
 </html>
-
