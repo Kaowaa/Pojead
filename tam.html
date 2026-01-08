@@ -183,25 +183,30 @@ h1, h2, h3 {
   </div>
 </nav>
 
-<div class="container main-container">
-  
-  <h2>ระบบแลกแต้ม</h2>
-  
-  <div class="text-start mb-4 p-3 bg-light rounded shadow-sm border border-primary">
-    <h3>แต้มสะสมปัจจุบัน: <span id="points" class="text-success fw-bold">0.0</span> คะแนน</h3>
-  </div>
+<div class="container">
+    <h3 class="fw-bold mb-4 text-center">ระบบแลกแต้มวิชา</h3>
+    
+    <div class="row">
+        <div class="col-lg-8 border-end">
+            <h5 class="fw-bold mb-3">🔍 ค้นหาวิชาที่เปิดให้แลก</h5>
+            <div class="input-group shadow-sm mb-4">
+                <span class="input-group-text bg-white"><i class="bi bi-search">🔎</i></span>
+                <input type="text" id="searchInput" class="form-control" 
+                       placeholder="พิมพ์ชื่อวิชา หรือ รหัสวิชา..." onkeyup="searchSubject()">
+            </div>
 
-  <h3 class="text-start">วิชาที่เปิดให้แลก</h3>
+            <div id="subjectContainer" style="max-height: 600px; overflow-y: auto; padding-right: 10px;">
+                </div>
+        </div>
 
-  <div id="subjectContainer" class="text-start">
+        <div class="col-lg-4">
+            <h5 class="fw-bold mb-3">📜 ประวัติการแลกของคุณ</h5>
+            <div style="max-height: 600px; overflow-y: auto;">
+                <ul id="history" class="list-group shadow-sm">
+                    </ul>
+            </div>
+        </div>
     </div>
-
-  <hr class="my-4">
-
-  <h3 class="text-start">ประวัติการแลกแต้ม</h3>
-  <ul id="history" class="list-group list-group-flush text-start">
-    </ul>
-
 </div>
 
 <script src="storage.js"></script>
@@ -312,42 +317,88 @@ document.getElementById("backBtn").onclick = () => {
   };
 
 
-/* =======================
-   ระบบแลกแต้ม
-======================= */
-function renderSubjects(){
+/* ==========================================
+   ระบบแลกแต้ม (Two-Column Layout)
+   ========================================== */
+
+function searchSubject() {
+    const filterText = document.getElementById("searchInput").value.trim();
+    renderSubjects(filterText);
+}
+
+function renderSubjects(filterText = ""){
   const subjectContainer = document.getElementById("subjectContainer");
+  if(!subjectContainer) return;
   subjectContainer.innerHTML = "";
+  
   const subjects = JSON.parse(localStorage.getItem("subjects") || "[]");
   const studentCurrentPoints = parseFloat(localStorage.getItem(`points_${studentId}`) || "0");
 
-  if(subjects.length === 0){
-    subjectContainer.innerHTML = "<p class='text-muted'>ยังไม่มีวิชาให้แลกในขณะนี้</p>";
+  const filteredSubjects = subjects.filter(s => 
+    s.name.toLowerCase().includes(filterText.toLowerCase()) || 
+    s.code.toLowerCase().includes(filterText.toLowerCase())
+  );
+
+  if(filteredSubjects.length === 0){
+    const msg = subjects.length === 0 ? "ยังไม่มีวิชาให้แลกในขณะนี้" : "ไม่พบวิชาที่คุณค้นหา";
+    subjectContainer.innerHTML = `<p class='text-muted text-center py-4'>${msg}</p>`;
     return;
   }
   
-  subjects.forEach(s => {
+  filteredSubjects.forEach(s => {
     const card = document.createElement("div");
-    card.className = "card mb-3";
+    card.className = "card mb-3 shadow-sm border-0 bg-light"; 
     
     const isRedeemed = isSubjectRedeemed(studentId, s.code);
     const canRedeem = studentCurrentPoints >= s.points && !isRedeemed;
     
     card.innerHTML = `
-      <div class="d-flex justify-content-between align-items-center">
+      <div class="card-body d-flex justify-content-between align-items-center">
         <div>
-          <h5>${s.name} (${s.code})</h5>
-          <p class="text-muted">ใช้แต้ม: <strong>${s.points}</strong> คะแนน</p>
+          <h6 class="mb-1 fw-bold">${s.name} <span class="text-primary">(${s.code})</span></h6>
+          <p class="text-muted mb-0 small">ใช้: <strong class="text-danger">${s.points}</strong> คะแนน</p>
         </div>
-        <button class="redeem-btn" 
+        <button class="btn btn-sm ${isRedeemed ? 'btn-secondary' : (canRedeem ? 'btn-success' : 'btn-outline-secondary')}" 
+                style="min-width: 90px; border-radius: 15px;"
                 onclick="redeemSubject('${s.code}', '${s.name}', ${s.points})"
                 ${!canRedeem || isRedeemed ? 'disabled' : ''}>
-          ${isRedeemed ? 'แลกแล้ว' : (canRedeem ? 'แลกแต้ม!' : 'แต้มไม่พอ')}
+          ${isRedeemed ? 'แลกแล้ว' : (canRedeem ? 'แลกแต้ม' : 'แต้มไม่พอ')}
         </button>
       </div>
     `;
     subjectContainer.appendChild(card);
   });
+}
+
+// ปรับปรุงการแสดงผลประวัติในคอลัมน์ขวา
+function renderHistory(){
+    const historyDisplay = document.getElementById("history");
+    if(!historyDisplay) return;
+    
+    historyDisplay.innerHTML = "";
+    const historyKey = "history_" + studentId;
+    const history = JSON.parse(localStorage.getItem(historyKey) || "[]").reverse(); 
+
+    if(history.length === 0){
+        historyDisplay.innerHTML = "<p class='text-center text-muted small py-3'>ยังไม่มีประวัติการแลก</p>";
+        return;
+    }
+
+    history.forEach(item => {
+        const li = document.createElement("li");
+        li.className = "list-group-item px-0 py-3 border-bottom";
+        li.style.background = "transparent";
+        li.innerHTML = `
+            <div class="d-flex justify-content-between align-items-start">
+              <div style="font-size: 0.85rem;">
+                <div class="fw-bold text-dark">${item.reward}</div>
+                <small class="text-muted">${item.date} (${item.code})</small>
+              </div>
+              <span class="badge bg-danger rounded-pill" style="font-size: 0.7rem;">-${item.cost}</span>
+            </div>
+        `;
+        historyDisplay.appendChild(li);
+    });
 }
 
 function isSubjectRedeemed(studentID, subjectCode){
@@ -373,7 +424,7 @@ function redeemSubject(code, name, cost){
         points -= cost;
         localStorage.setItem(`points_${studentId}`, points.toFixed(1));
         
-        // 2. บันทึกประวัติการแลก
+        // 2. บันทึกประวัติการแลก (สำหรับหน้าประวัตินักเรียน)
         const historyKey = "history_" + studentId;
         let history = JSON.parse(localStorage.getItem(historyKey) || "[]");
         const today = new Date().toLocaleDateString('th-TH');
@@ -394,17 +445,19 @@ function redeemSubject(code, name, cost){
 
         // 4. อัปเดต UI
         renderHistory();
-        updateStats(); // อัปเดตแต้มใน sidebar และหน้าหลัก
-        renderSubjects(); // อัปเดตปุ่ม disabled
+        if(typeof updateStats === "function") updateStats(); // เช็คว่ามีฟังก์ชันอัปเดต sidebar ไหม
+        renderSubjects(document.getElementById("searchInput").value); // อัปเดตรายการวิชาโดยคงคำค้นหาเดิมไว้
         alert("แลกแต้มสำเร็จ ✔");
     }
 }
 
 function renderHistory(){
     const historyDisplay = document.getElementById("history");
+    if(!historyDisplay) return;
+    
     historyDisplay.innerHTML = "";
     const historyKey = "history_" + studentId;
-    const history = JSON.parse(localStorage.getItem(historyKey) || "[]").reverse(); // ล่าสุดขึ้นก่อน
+    const history = JSON.parse(localStorage.getItem(historyKey) || "[]").reverse(); 
 
     if(history.length === 0){
         historyDisplay.innerHTML = "<li class='list-group-item text-center text-muted'>ยังไม่มีประวัติการแลกแต้ม</li>";
@@ -415,19 +468,19 @@ function renderHistory(){
         const li = document.createElement("li");
         li.className = "list-group-item d-flex justify-content-between align-items-center";
         li.innerHTML = `
-            <span>${item.date} - แลก: <strong>${item.reward}</strong> (${item.code})</span>
-            <span class="badge bg-danger">ใช้ ${item.cost} คะแนน</span>
+            <span><i class="bi bi-clock-history me-2"></i>${item.date} - แลก: <strong>${item.reward}</strong> (${item.code})</span>
+            <span class="badge bg-danger rounded-pill">ใช้ ${item.cost} คะแนน</span>
         `;
         historyDisplay.appendChild(li);
     });
 }
 
+// แก้ไขฟังก์ชัน onload ให้รันระบบทั้งหมด
 window.onload = () => {
-  checkLoginStatus();
+  if(typeof checkLoginStatus === "function") checkLoginStatus();
   renderSubjects();
   renderHistory();
 };
-
 </script>
 </body>
 
